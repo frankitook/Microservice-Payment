@@ -23,5 +23,5 @@ This project is a microservice for payment processing that is part of a microser
 1. Clone the repository:
 
    ```bash
-   git clone <REPOSITORY_URL>
+   git clone https://github.com/frankitook/Microservice-Payment.git
    cd paymentservice
