@@ -5,7 +5,7 @@ This project is a microservice for payment processing that is part of a microser
 ## Features
 
 - Process payments for orders, including verification of amounts and payment methods.
-- Update the status of payments (e.g., "Paid", "Pending", "Canceled").
+- Update the status of payments.
 - Integration with the Order microservice to validate the existence and status of the order before processing the payment.
 - Error handling and appropriate responses in case of payment processing failures.
 - Support for different payment methods.
