@@ -11,21 +11,37 @@ const crearPago = async (req, res) => {
   const { title, description, amount, currency } = req.body;
 
 
+
   try {
     const preference= await new Preference(client).create({
         body:{
             items:[
 
                 {
-                    id:'1234',
-                    unit_price: 200,
+                    id:'10291723',
+                    unit_price: 400,
                     quantity: 1,
-                    title: "Product",
-                    currency_id:'ARS'
+                    title: "Yerba",
+                    currency_id:'ARS',
+                    
                 
                 }
             ],
-            notification_url:'http://localhost:3003/payment/webhook',
+            notification_url:'https://l947bxd2-3003.brs.devtunnels.ms/payment/webhook',
+            payer :{
+
+                name:'Franco',
+                surname:'Gimenez',
+                email:'franco@gmail.com',
+                address:{
+                    zip_code:'2900',
+                    street_name:'Acevedo',
+                    street_number:831
+                }
+
+            },
+           
+            
             metadata:{
                 text
             }
@@ -59,23 +75,26 @@ const pendingPayment = async (req, res) => {
 
 
 const recibirNotificacion = async (req, res) => {
-    try {
-      const paymentId = req.query['data.id'];
+    
+    if (req.body.data && req.body.data.id) {
+
+      const id = req.body.data.id;
+
+
+      const payment = await new Payment(client).get({id});
+     
+      console.log("Estadooooooooooo: ", payment.status);
+
       
-      const payment = await new Payment(client).get({paymentId});
-
-
-      if (payment.status === 'approved') {
-        
-        console.log("Notificación de pago recibida:", payment.body);
-      }
+    } 
   
-      res.status(200).send('Notificación recibida'); 
-    } catch (error) {
-      console.error("Error al procesar la notificación:", error.message);
-      res.status(500).send('Error al procesar la notificación');
-    }
+    
+    res.status(200).send('OK');
   };
+  
+  
+  
+  
   
 
 module.exports = { crearPago, successPayment, failurePayment, pendingPayment ,recibirNotificacion};
