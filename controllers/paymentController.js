@@ -12,6 +12,7 @@ const crearPago = async (req, res) => {
 
 
 
+
   try {
     const preference= await new Preference(client).create({
         body:{
