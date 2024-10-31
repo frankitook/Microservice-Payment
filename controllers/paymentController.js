@@ -8,7 +8,7 @@ const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN 
 
 
 const crearPago = async (req, res) => {
-  const { title, description, amount, currency } = req.body;
+  const { id,title, description, amount, currency,name,surname,email, zip_code, street_name, street_number } = req.body;
 
 
 
@@ -18,11 +18,11 @@ const crearPago = async (req, res) => {
             items:[
 
                 {
-                    id:'10291723',
-                    unit_price: 400,
+                    id:id+'',
+                    unit_price: amount,
                     quantity: 1,
-                    title: "Yerba",
-                    currency_id:'ARS',
+                    title: description,
+                    currency_id:currency,
                     
                 
                 }
@@ -30,13 +30,13 @@ const crearPago = async (req, res) => {
             notification_url:'https://l947bxd2-3003.brs.devtunnels.ms/payment/webhook',
             payer :{
 
-                name:'Franco',
-                surname:'Gimenez',
-                email:'franco@gmail.com',
+                name:name,
+                surname:surname,
+                email:email,
                 address:{
-                    zip_code:'2900',
-                    street_name:'Acevedo',
-                    street_number:831
+                    zip_code:zip_code,
+                    street_name:street_name,
+                    street_number:street_number
                 }
 
             },
@@ -53,7 +53,7 @@ const crearPago = async (req, res) => {
 
     const url= preference.init_point;
 
-    res.json({ url:url });
+    res.status(200).json({ url:url });
 
     
   } catch (error) {
