@@ -11,7 +11,7 @@ const crearPago = async (req, res) => {
   const { id,title, description, amount, currency,name,surname,email, zip_code, street_name, street_number } = req.body;
 
 
-
+  const notificationUrl = `https://l947bxd2-3003.brs.devtunnels.ms/payment/webhook/${id}`;
 
   try {
     const preference= await new Preference(client).create({
@@ -28,7 +28,7 @@ const crearPago = async (req, res) => {
                 
                 }
             ],
-            notification_url:'https://l947bxd2-3003.brs.devtunnels.ms/payment/webhook',
+            notification_url:notificationUrl,
             payer :{
 
                 name:name,
@@ -62,40 +62,55 @@ const crearPago = async (req, res) => {
   }
 };
 
-const successPayment = async (req, res) => {
-  res.send('¡Pago exitoso! Gracias por tu compra.');
-};
-
-const failurePayment = async (req, res) => {
-  res.send('El pago ha fallado. Por favor, inténtalo de nuevo.');
-};
-
-const pendingPayment = async (req, res) => {
-  res.send('El pago está pendiente. Te notificaremos una vez que se procese.');
-};
 
 
 const recibirNotificacion = async (req, res) => {
-    
-    if (req.body.data && req.body.data.id) {
+  const { idOrder } = req.params;
+  if (req.body.data && req.body.data.id) {
+    const id = req.body.data.id;
 
-      const id = req.body.data.id;
+    console.log(id);
 
-
-      const payment = await new Payment(client).get({id});
-     
-      console.log("Estadooooooooooo: ", payment.status);
+    try {
+      const payment = await new Payment(client).get({ id });
+      let newStatus;
+      
+     console.log( payment.payment_type_id); 
+      
+      if (payment.status === 'approved') {
+        newStatus = 'Completada';
+      } else if (payment.status === 'pending') {
+        newStatus = 'Pendiente';
+      } else {
+        newStatus = 'Cancelada';
+      }
 
       
-    } 
-  
-    
-    res.status(200).send('OK');
-  };
+      const response = await fetch(`http://localhost:3002/pedidos/${idOrder}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ estado: newStatus, comprobante: id+"" })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar el estado de la orden');
+      }
+
+      console.log(`Estado de la orden actualizado a ${newStatus}`);
+    } catch (error) {
+      console.error('Error al recibir la notificación de pago:', error.message);
+    }
+  }
+
+  res.status(200).send('OK');
+};
+
   
   
   
   
   
 
-module.exports = { crearPago, successPayment, failurePayment, pendingPayment ,recibirNotificacion};
+module.exports = { crearPago ,recibirNotificacion};
