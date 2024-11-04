@@ -11,7 +11,7 @@ const crearPago = async (req, res) => {
   const { id,title, description, amount, currency,name,surname,email, zip_code, street_name, street_number } = req.body;
 
 
-  const notificationUrl = `https://l947bxd2-3003.brs.devtunnels.ms/payment/webhook/${id}`;
+  const notificationUrl = `https://3t9v70w8-3003.brs.devtunnels.ms/payment/webhook/${id}`;
 
   try {
     const preference= await new Preference(client).create({
@@ -75,7 +75,7 @@ const recibirNotificacion = async (req, res) => {
       const payment = await new Payment(client).get({ id });
       let newStatus;
 
-      console.log(payment.payment_type_id);
+      
 
       if (payment.status === 'approved') {
         newStatus = 'Completada';
@@ -88,20 +88,33 @@ const recibirNotificacion = async (req, res) => {
         }
 
         const productosDelCarrito = await cartResponse.json();
-
+        
         
         await Promise.all(productosDelCarrito.map(async (item) => {
-          const productoResponse = await fetch(`http://localhost:3001/products/${item.idProducto}`, {
+          
+          const productoResponse = await fetch(`http://localhost:3001/products/${item.idProducto}`);
+        
+          if (!productoResponse.ok) {
+            throw new Error(`Error al obtener el producto ${item.idProducto}`);
+          }
+        
+          const producto = await productoResponse.json();
+          const stockActual = producto.stock;
+        
+          
+        
+          
+          const actualizarStockResponse = await fetch(`http://localhost:3001/products/${item.idProducto}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              stock: item.stock - item.cantidad
+              stock: stockActual - item.cantidad
             })
           });
-
-          if (!productoResponse.ok) {
+        
+          if (!actualizarStockResponse.ok) {
             throw new Error(`Error al actualizar el stock del producto ${item.idProducto}`);
           }
         }));
