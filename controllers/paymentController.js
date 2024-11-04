@@ -74,11 +74,37 @@ const recibirNotificacion = async (req, res) => {
     try {
       const payment = await new Payment(client).get({ id });
       let newStatus;
-      
-     console.log( payment.payment_type_id); 
-      
+
+      console.log(payment.payment_type_id);
+
       if (payment.status === 'approved') {
         newStatus = 'Completada';
+        
+        
+        const cartResponse = await fetch(`http://localhost:3002/cart/${idOrder}`);
+
+        if (!cartResponse.ok) {
+          throw new Error('Error al obtener los productos del carrito');
+        }
+
+        const productosDelCarrito = await cartResponse.json();
+
+        
+        await Promise.all(productosDelCarrito.map(async (item) => {
+          const productoResponse = await fetch(`http://localhost:3001/products/${item.idProducto}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              stock: item.stock - item.cantidad
+            })
+          });
+
+          if (!productoResponse.ok) {
+            throw new Error(`Error al actualizar el stock del producto ${item.idProducto}`);
+          }
+        }));
       } else if (payment.status === 'pending') {
         newStatus = 'Pendiente';
       } else {
@@ -91,7 +117,7 @@ const recibirNotificacion = async (req, res) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ estado: newStatus, comprobante: id+"" })
+        body: JSON.stringify({ estado: newStatus, comprobante: id + "" })
       });
 
       if (!response.ok) {
@@ -106,6 +132,9 @@ const recibirNotificacion = async (req, res) => {
 
   res.status(200).send('OK');
 };
+
+
+
 
   
   
